@@ -15,7 +15,6 @@ class Package:
     eta: int = 0
 
     def orientations(self) -> List[Tuple[int, int, int]]:
-        # Six permutations of the original dimensions; duplicates are removed.
         return list(dict.fromkeys([
             (self.w, self.l, self.h), (self.w, self.h, self.l),
             (self.l, self.w, self.h), (self.l, self.h, self.w),
@@ -33,7 +32,6 @@ class Truck:
 
 @dataclass
 class Gene:
-    # x,y,z are the lower-left-back corner. inside=False means fully outside.
     inside: bool
     x: int
     y: int
