@@ -1,6 +1,11 @@
 import unittest
 
-from core.objective import floating_count, overlap_volume, total_overlap
+from core.objective import (
+    floating_count,
+    fragile_support_count,
+    overlap_volume,
+    total_overlap,
+)
 
 
 class TestOverlap(unittest.TestCase):
@@ -47,6 +52,31 @@ class TestFloating(unittest.TestCase):
     def test_identical_boxes(self):
         boxes = [(0, 0, 2, 2, 2, 2), (0, 0, 2, 2, 2, 2)]
         self.assertEqual(floating_count(boxes), 2)
+
+
+class TestFragile(unittest.TestCase):
+    def test_fragile_alone(self):
+        self.assertEqual(fragile_support_count([(0, 0, 0, 2, 2, 2)], [True]), 0)
+
+    def test_on_top_of_fragile(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (0, 0, 2, 2, 2, 2)]
+        self.assertEqual(fragile_support_count(boxes, [True, False]), 1)
+
+    def test_fragile_on_top(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (0, 0, 2, 2, 2, 2)]
+        self.assertEqual(fragile_support_count(boxes, [False, True]), 0)
+
+    def test_two_on_fragile(self):
+        boxes = [(0, 0, 0, 4, 2, 2), (0, 0, 2, 2, 2, 1), (2, 0, 2, 2, 2, 1)]
+        self.assertEqual(fragile_support_count(boxes, [True, False, False]), 2)
+
+    def test_side_by_side(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (2, 0, 0, 2, 2, 2)]
+        self.assertEqual(fragile_support_count(boxes, [True, False]), 0)
+
+    def test_gap_above_fragile(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (0, 0, 3, 2, 2, 2)]
+        self.assertEqual(fragile_support_count(boxes, [True, False]), 0)
 
 
 if __name__ == "__main__":

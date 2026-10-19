@@ -41,3 +41,15 @@ def is_supported(box, boxes):
 # jumlah paket melayang
 def floating_count(boxes):
     return sum(1 for b in boxes if not is_supported(b, boxes))
+
+
+# jumlah paket yang menumpang di atas paket fragile
+def fragile_support_count(boxes, fragile):
+    count = 0
+    for i, below in enumerate(boxes):
+        if not fragile[i]:
+            continue
+        for j, above in enumerate(boxes):
+            if i != j and below[2] + below[5] == above[2] and _contact_area(above, below) > 0:
+                count += 1
+    return count
