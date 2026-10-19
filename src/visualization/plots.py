@@ -141,7 +141,7 @@ def plot_sa_acceptance_prob(
                 x=stuck_iterations,
                 y=stuck_probs,
                 mode="markers",
-                name=f"Stuck di Local Optima ({len(stuck_iterations)}x)",
+                name=f"Stuck ({len(stuck_iterations)}x)",
                 marker=dict(size=9, color="#dc2626", symbol="x"),
             ),
             secondary_y=False,

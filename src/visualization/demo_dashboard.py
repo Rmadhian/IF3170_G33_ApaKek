@@ -59,7 +59,7 @@ def export_sa_demo_report(
             f"<b>Final Best Score:</b> {sa_result.best_score:.2f} | "
             f"<b>Total Iterasi:</b> {sa_result.iterations} | "
             f"<b>Durasi:</b> {sa_result.duration_sec:.4f} detik | "
-            f"<b>Frekuensi Stuck di Local Optima:</b> {sa_result.stuck_count} kali</p></div>"
+            f"<b>Frekuensi Stuck:</b> {sa_result.stuck_count} kali</p></div>"
         )
         f.write("<div class='card'>" + fig_init.to_html(full_html=False, include_plotlyjs="cdn") + "</div>")
         f.write("<div class='card'>" + fig_final.to_html(full_html=False, include_plotlyjs=False) + "</div>")
