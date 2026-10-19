@@ -6,6 +6,7 @@ from core.objective import (
     overlap_volume,
     total_overlap,
 )
+from core.models import Package, Placement, State
 
 
 class TestOverlap(unittest.TestCase):
@@ -24,7 +25,6 @@ class TestOverlap(unittest.TestCase):
     def test_total(self):
         boxes = [(0, 0, 0, 2, 2, 2), (1, 0, 0, 2, 2, 2), (10, 10, 10, 1, 1, 1)]
         self.assertEqual(total_overlap(boxes), 4)
-
 
 class TestFloating(unittest.TestCase):
     def test_on_floor(self):
@@ -107,6 +107,29 @@ class TestEdgeCases(unittest.TestCase):
         boxes = [(0, 0, 1, 2, 2, 2), (1, 1, 1, 2, 2, 2)]
         self.assertEqual(total_overlap(boxes), 2)
         self.assertEqual(floating_count(boxes), 2)
+
+
+class TestModels(unittest.TestCase):
+    def test_cube_one_orientation(self):
+        self.assertEqual(len(Package("A", 2, 2, 2, 10, 1).orientations()), 1)
+
+    def test_box_orientations(self):
+        self.assertEqual(len(Package("A", 1, 2, 3, 10, 1).orientations()), 6)
+
+    def test_box_uses_orientation(self):
+        pkgs = [Package("A", 1, 2, 3, 10, 1)]
+        state = State([Placement(True, 4, 5, 0, 2)])
+        self.assertEqual(state.box(0, pkgs), (4, 5, 0, 2, 1, 3))
+
+    def test_copy_independent(self):
+        state = State([Placement(True, 0, 0, 0, 0)])
+        clone = state.copy()
+        clone.placements[0].x = 9
+        self.assertEqual(state.placements[0].x, 0)
+
+    def test_inside_indices(self):
+        state = State([Placement(True, 0, 0, 0), Placement(False), Placement(True, 2, 0, 0)])
+        self.assertEqual(state.inside_indices(), [0, 2])
 
 
 if __name__ == "__main__":
