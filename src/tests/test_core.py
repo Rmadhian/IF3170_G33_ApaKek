@@ -3,7 +3,10 @@ import unittest
 from core.objective import (
     floating_count,
     fragile_support_count,
+    out_of_bounds_volume,
+    overweight,
     overlap_volume,
+    total_out_of_bounds,
     total_overlap,
 )
 from core.models import Package, Placement, State
@@ -130,6 +133,35 @@ class TestModels(unittest.TestCase):
     def test_inside_indices(self):
         state = State([Placement(True, 0, 0, 0), Placement(False), Placement(True, 2, 0, 0)])
         self.assertEqual(state.inside_indices(), [0, 2])
+
+
+class TestBoundsWeight(unittest.TestCase):
+    truck = (10, 10, 10)
+
+    def test_fully_inside(self):
+        self.assertEqual(out_of_bounds_volume((0, 0, 0, 10, 10, 10), self.truck), 0)
+
+    def test_partly_outside(self):
+        self.assertEqual(out_of_bounds_volume((9, 0, 0, 2, 1, 1), self.truck), 1)
+
+    def test_negative_coord(self):
+        self.assertEqual(out_of_bounds_volume((-1, 0, 0, 2, 2, 2), self.truck), 4)
+
+    def test_fully_outside(self):
+        self.assertEqual(out_of_bounds_volume((20, 0, 0, 2, 2, 2), self.truck), 8)
+
+    def test_total(self):
+        boxes = [(0, 0, 0, 1, 1, 1), (9, 9, 9, 2, 2, 2)]
+        self.assertEqual(total_out_of_bounds(boxes, self.truck), 7)
+
+    def test_under_capacity(self):
+        self.assertEqual(overweight(80, 100), 0)
+
+    def test_exact_capacity(self):
+        self.assertEqual(overweight(100, 100), 0)
+
+    def test_over_capacity(self):
+        self.assertEqual(overweight(130, 100), 30)
 
 
 if __name__ == "__main__":

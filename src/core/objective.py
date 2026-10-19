@@ -53,3 +53,19 @@ def fragile_support_count(boxes, fragile):
             if i != j and below[2] + below[5] == above[2] and _contact_area(above, below) > 0:
                 count += 1
     return count
+
+
+# volume paket yang keluar dari truk
+def out_of_bounds_volume(box, truck_dims):
+    inside = overlap_volume(box, (0, 0, 0) + tuple(truck_dims))
+    return box[3] * box[4] * box[5] - inside
+
+
+# total volume tembus dinding
+def total_out_of_bounds(boxes, truck_dims):
+    return sum(out_of_bounds_volume(b, truck_dims) for b in boxes)
+
+
+# kelebihan berat di atas kapasitas
+def overweight(total_weight, max_capacity):
+    return max(0, total_weight - max_capacity)
