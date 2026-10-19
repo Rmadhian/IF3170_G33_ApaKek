@@ -1,6 +1,6 @@
 import unittest
 
-from core.objective import overlap_volume, total_overlap
+from core.objective import floating_count, overlap_volume, total_overlap
 
 
 class TestOverlap(unittest.TestCase):
@@ -19,6 +19,34 @@ class TestOverlap(unittest.TestCase):
     def test_total(self):
         boxes = [(0, 0, 0, 2, 2, 2), (1, 0, 0, 2, 2, 2), (10, 10, 10, 1, 1, 1)]
         self.assertEqual(total_overlap(boxes), 4)
+
+
+class TestFloating(unittest.TestCase):
+    def test_on_floor(self):
+        self.assertEqual(floating_count([(0, 0, 0, 2, 2, 2)]), 0)
+
+    def test_in_air(self):
+        self.assertEqual(floating_count([(0, 0, 3, 2, 2, 2)]), 1)
+
+    def test_stacked(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (0, 0, 2, 2, 2, 2)]
+        self.assertEqual(floating_count(boxes), 0)
+
+    def test_partial_support(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (1, 1, 2, 2, 2, 2)]
+        self.assertEqual(floating_count(boxes), 0)
+
+    def test_gap_below(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (0, 0, 3, 2, 2, 2)]
+        self.assertEqual(floating_count(boxes), 1)
+
+    def test_edge_touch_only(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (2, 0, 2, 2, 2, 2)]
+        self.assertEqual(floating_count(boxes), 1)
+
+    def test_identical_boxes(self):
+        boxes = [(0, 0, 2, 2, 2, 2), (0, 0, 2, 2, 2, 2)]
+        self.assertEqual(floating_count(boxes), 2)
 
 
 if __name__ == "__main__":

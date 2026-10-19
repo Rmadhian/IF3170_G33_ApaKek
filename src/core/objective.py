@@ -19,3 +19,25 @@ def overlap_volume(a, b):
 # total overlap semua pasangan paket
 def total_overlap(boxes):
     return sum(overlap_volume(a, b) for a, b in combinations(boxes, 2))
+
+
+# luas irisan alas a dengan atap b
+def _contact_area(a, b):
+    dx = _axis_overlap(a[0], a[3], b[0], b[3])
+    dy = _axis_overlap(a[1], a[4], b[1], b[4])
+    return dx * dy
+
+
+# paket di lantai atau ditopang paket lain
+def is_supported(box, boxes):
+    if box[2] == 0:
+        return True
+    for other in boxes:
+        if other[2] + other[5] == box[2] and _contact_area(box, other) > 0:
+            return True
+    return False
+
+
+# jumlah paket melayang
+def floating_count(boxes):
+    return sum(1 for b in boxes if not is_supported(b, boxes))
