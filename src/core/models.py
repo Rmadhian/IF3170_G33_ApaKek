@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
@@ -49,7 +50,7 @@ class State:
 
     def copy(self) -> State:
         return State([Placement(p.inside, p.x, p.y, p.z, p.orientation)
-                      for p in self.placements])
+            for p in self.placements])
 
     def dims(self, i: int, packages: List[Package]) -> Tuple[int, int, int]:
         ori = packages[i].orientations()
@@ -62,3 +63,18 @@ class State:
 
     def inside_indices(self) -> List[int]:
         return [i for i, p in enumerate(self.placements) if p.inside]
+
+
+# state awal acak
+def random_state(packages: List[Package], truck: Truck, rng: random.Random) -> State:
+    placements = []
+    for pkg in packages:
+        ori = rng.randrange(len(pkg.orientations()))
+        w, l, h = pkg.orientations()[ori]
+        fits = w <= truck.w and l <= truck.l and h <= truck.h
+        if fits and rng.random() < 0.5:
+            placements.append(Placement(True, rng.randint(0, truck.w - w),
+                rng.randint(0, truck.l - l), rng.randint(0, truck.h - h), ori))
+        else:
+            placements.append(Placement(False, orientation=ori))
+    return State(placements)

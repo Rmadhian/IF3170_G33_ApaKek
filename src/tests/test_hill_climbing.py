@@ -1,0 +1,56 @@
+import random
+import unittest
+
+from core.models import Package, Placement, State, Truck, random_state
+from core.objective import objective, violations
+from hillClimbing.hillClimbing import steepest_ascent
+
+
+class TestRandomState(unittest.TestCase):
+    def test_inside_within_truck(self):
+        truck = Truck(5, 5, 5, 100)
+        pkgs = [Package(str(i), 2, 3, 1, 10, 1) for i in range(10)]
+        state = random_state(pkgs, truck, random.Random(1))
+        self.assertEqual(violations(state, pkgs, truck)["out_of_bounds"], 0)
+
+    def test_too_big_stays_outside(self):
+        truck = Truck(2, 2, 2, 100)
+        pkgs = [Package("A", 5, 5, 5, 10, 1)]
+        state = random_state(pkgs, truck, random.Random(1))
+        self.assertFalse(state.placements[0].inside)
+
+
+class TestSteepestAscent(unittest.TestCase):
+    truck = Truck(4, 4, 4, 100)
+    pkgs = [Package("A", 2, 2, 2, 30, 4), Package("B", 2, 2, 2, 20, 4, True),
+            Package("C", 4, 4, 1, 15, 4)]
+
+    def test_history_increasing(self):
+        result = steepest_ascent(self.pkgs, self.truck, seed=3)
+        h = result["history"]
+        self.assertTrue(all(a < b for a, b in zip(h, h[1:])))
+
+    def test_fixes_invalid_start(self):
+        start = State([Placement(True, 0, 0, 2), Placement(True, 1, 1, 2), Placement(False)])
+        result = steepest_ascent(self.pkgs, self.truck, initial=start)
+        v = violations(result["final_state"], self.pkgs, self.truck)
+        self.assertEqual(sum(v.values()), 0)
+
+    def test_initial_not_modified(self):
+        start = State([Placement(False), Placement(False), Placement(False)])
+        steepest_ascent(self.pkgs, self.truck, initial=start)
+        self.assertFalse(start.placements[0].inside)
+
+    def test_final_matches_objective(self):
+        result = steepest_ascent(self.pkgs, self.truck, seed=5)
+        self.assertEqual(result["final_objective"],
+                         objective(result["final_state"], self.pkgs, self.truck))
+
+    def test_same_seed_same_result(self):
+        a = steepest_ascent(self.pkgs, self.truck, seed=7)
+        b = steepest_ascent(self.pkgs, self.truck, seed=7)
+        self.assertEqual(a["history"], b["history"])
+
+
+if __name__ == "__main__":
+    unittest.main()
