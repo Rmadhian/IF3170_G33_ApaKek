@@ -84,3 +84,31 @@ def stochastic(packages, truck, max_iter=1000, initial=None, seed=None):
         "iterations": max_iter,
         "duration": time.perf_counter() - start,
     }
+
+
+# random restart, steepest ascent diulang dari state acak
+def random_restart(packages, truck, max_restart=10, seed=None):
+    rng = random.Random(seed)
+    start = time.perf_counter()
+    goal = sum(p.value for p in packages)
+    best, history, iterations_per_restart = None, [], []
+
+    for restart in range(max_restart + 1):
+        result = steepest_ascent(packages, truck, seed=rng.random())
+        history.extend(result["history"])
+        iterations_per_restart.append(result["iterations"])
+        if best is None or result["final_objective"] > best["final_objective"]:
+            best = result
+        if best["final_objective"] == goal:
+            break
+
+    return {
+        "initial_state": best["initial_state"],
+        "final_state": best["final_state"],
+        "final_objective": best["final_objective"],
+        "history": history,
+        "restarts": restart,
+        "iterations_per_restart": iterations_per_restart,
+        "iterations": sum(iterations_per_restart),
+        "duration": time.perf_counter() - start,
+    }

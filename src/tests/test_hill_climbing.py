@@ -3,7 +3,12 @@ import unittest
 
 from core.models import Package, Placement, State, Truck, random_state
 from core.objective import objective, violations
-from hillClimbing.hillClimbing import sideways_move, steepest_ascent, stochastic
+from hillClimbing.hillClimbing import (
+    random_restart,
+    sideways_move,
+    steepest_ascent,
+    stochastic,
+)
 
 
 class TestRandomState(unittest.TestCase):
@@ -105,6 +110,35 @@ class TestStochastic(unittest.TestCase):
         a = stochastic(self.pkgs, self.truck, max_iter=100, seed=9)
         b = stochastic(self.pkgs, self.truck, max_iter=100, seed=9)
         self.assertEqual(a["history"], b["history"])
+
+
+class TestRandomRestart(unittest.TestCase):
+    truck = Truck(4, 4, 4, 100)
+    pkgs = [Package("A", 2, 2, 2, 30, 4), Package("B", 2, 2, 2, 20, 4, True),
+            Package("C", 4, 4, 1, 15, 4)]
+
+    def test_restart_within_limit(self):
+        r = random_restart(self.pkgs, self.truck, max_restart=3, seed=1)
+        self.assertLessEqual(r["restarts"], 3)
+        self.assertEqual(len(r["iterations_per_restart"]), r["restarts"] + 1)
+
+    def test_zero_restart_single_run(self):
+        r = random_restart(self.pkgs, self.truck, max_restart=0, seed=1)
+        self.assertEqual((r["restarts"], len(r["iterations_per_restart"])), (0, 1))
+
+    def test_stops_at_goal(self):
+        pkgs = [Package("A", 1, 1, 1, 10, 1)]
+        r = random_restart(pkgs, Truck(3, 3, 3, 100), max_restart=20, seed=2)
+        self.assertEqual(r["final_objective"], 10)
+        self.assertEqual(r["restarts"], 0)
+
+    def test_not_worse_than_any_run(self):
+        r = random_restart(self.pkgs, self.truck, max_restart=4, seed=5)
+        self.assertGreaterEqual(r["final_objective"], max(r["history"]))
+
+    def test_history_length(self):
+        r = random_restart(self.pkgs, self.truck, max_restart=3, seed=6)
+        self.assertEqual(len(r["history"]), r["iterations"] + r["restarts"] + 1)
 
 
 if __name__ == "__main__":
