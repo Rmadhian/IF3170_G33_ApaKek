@@ -3,7 +3,7 @@ import unittest
 
 from core.models import Package, Placement, State, Truck, random_state
 from core.objective import objective, violations
-from hillClimbing.hillClimbing import steepest_ascent
+from hillClimbing.hillClimbing import sideways_move, steepest_ascent
 
 
 class TestRandomState(unittest.TestCase):
@@ -50,6 +50,36 @@ class TestSteepestAscent(unittest.TestCase):
         a = steepest_ascent(self.pkgs, self.truck, seed=7)
         b = steepest_ascent(self.pkgs, self.truck, seed=7)
         self.assertEqual(a["history"], b["history"])
+
+
+class TestSidewaysMove(unittest.TestCase):
+    truck = Truck(4, 4, 4, 100)
+    pkgs = [Package("A", 2, 2, 2, 30, 4), Package("B", 2, 2, 2, 20, 4, True),
+            Package("C", 4, 4, 1, 15, 4)]
+
+    def test_never_decreases(self):
+        h = sideways_move(self.pkgs, self.truck, max_sideways=10, seed=3)["history"]
+        self.assertTrue(all(a <= b for a, b in zip(h, h[1:])))
+
+    def test_zero_limit_is_steepest(self):
+        r = sideways_move(self.pkgs, self.truck, max_sideways=0, seed=3)
+        self.assertEqual(r["sideways_moves"], 0)
+        h = r["history"]
+        self.assertTrue(all(a < b for a, b in zip(h, h[1:])))
+
+    def test_total_limit(self):
+        limit = 5
+        r = sideways_move(self.pkgs, self.truck, max_sideways=limit, seed=3)
+        flat = sum(1 for a, b in zip(r["history"], r["history"][1:]) if a == b)
+        self.assertLessEqual(r["sideways_moves"], limit)
+        self.assertEqual(flat, r["sideways_moves"])
+
+    def test_flat_start_moves_sideways(self):
+        start = State([Placement(True, 0, 0, 0), Placement(False), Placement(False)])
+        tiny = Truck(2, 2, 2, 100)
+        r = sideways_move(self.pkgs, tiny, max_sideways=3, initial=start, seed=1)
+        self.assertEqual(r["sideways_moves"], 3)
+        self.assertEqual(r["final_objective"], 30)
 
 
 if __name__ == "__main__":
