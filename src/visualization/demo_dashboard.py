@@ -1,10 +1,11 @@
 import os
 from typing import Any, Tuple
-from src.algorithms.simulated_annealing import SAResult
-from src.visualization.viz_3d import visualize_container_state
-from src.visualization.plots import plot_objective_history, plot_sa_acceptance_prob
+from simulatedAnnealing.simulatedAnnealing import SAResult
+from visualization.viz_3d import visualize_container_state
+from visualization.plots import plot_objective_history, plot_sa_acceptance_prob
 
 
+# dashboard html hasil SA buat demo
 def export_sa_demo_report(
     sa_result: SAResult,
     truck_dims: Tuple[int, int, int],
@@ -14,12 +15,9 @@ def export_sa_demo_report(
     output_dir: str = "output/sa_demo",
     run_id: int = 1,
 ) -> str:
-    """
-    Menghasilkan halaman dashboard HTML interaktif untuk demo serta menyimpan plot PNG untuk laporan.
-    """
     os.makedirs(output_dir, exist_ok=True)
 
-    # Hasilkan Figure 3D Initial & Final State
+    # 3d state awal dan akhir
     fig_init = visualize_container_state(
         truck_dims=truck_dims,
         max_capacity=max_capacity,
@@ -35,7 +33,7 @@ def export_sa_demo_report(
         title=f"SA Run #{run_id} — Final State (Durasi: {sa_result.duration_sec:.3f}s | Stuck: {sa_result.stuck_count}x)",
     )
 
-    # Hasilkan Plot Eksperimen (simpan PNG sekaligus ambil objek Plotly)
+    # plot eksperimen
     fig_obj = plot_objective_history(
         objective_history=sa_result.objective_history,
         best_history=sa_result.best_objective_history,
@@ -49,7 +47,7 @@ def export_sa_demo_report(
         save_path=os.path.join(output_dir, f"sa_run_{run_id}_acceptance_prob.png"),
     )
 
-    # Gabungkan menjadi satu file HTML interaktif untuk Demo
+    # gabung jadi satu html
     dashboard_path = os.path.join(output_dir, f"sa_demo_run_{run_id}.html")
     with open(dashboard_path, "w", encoding="utf-8") as f:
         f.write("<html><head><meta charset='utf-8'><title>Demo Tugas Besar 1 IF3170 - Mejiro Express</title>")

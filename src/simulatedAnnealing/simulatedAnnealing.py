@@ -5,10 +5,14 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
+from core.models import random_state
+from core.neighbors import random_neighbor
+from core.objective import objective
 
+
+# hasil satu run SA
 @dataclass
 class SAResult:
-    """Struktur data penyimpan hasil run Simulated Annealing untuk eksperimen & visualisasi."""
     initial_state: Any
     final_state: Any
     best_state: Any
@@ -25,11 +29,8 @@ class SAResult:
     temperature_history: List[float] = field(default_factory=list)
 
 
+# simulated annealing
 class SimulatedAnnealing:
-    """
-    Implementasi algoritma Simulated Annealing untuk optimasi penempatan paket
-    di dalam peti kemas truk (Mejiro Express).
-    """
 
     def __init__(
         self,
@@ -39,7 +40,7 @@ class SimulatedAnnealing:
         cooling_rate: float = 0.995,
         min_temp: float = 1e-3,
         max_iterations: int = 5000,
-        schedule_type: str = "geometric",  # Pilihan: "geometric", "linear", "logarithmic"
+        schedule_type: str = "geometric",  # geometric, linear, logarithmic
         stuck_window: int = 50,
         seed: Optional[int] = None,
     ):
@@ -53,8 +54,8 @@ class SimulatedAnnealing:
         self.stuck_window = stuck_window
         self.seed = seed
 
+    # suhu baru sesuai cooling schedule
     def _calculate_temperature(self, iteration: int, current_temp: float) -> float:
-        """Menghitung temperatur T pada iterasi ke-t sesuai cooling schedule."""
         if self.schedule_type == "geometric":
             return current_temp * self.cooling_rate
         elif self.schedule_type == "linear":
@@ -65,11 +66,8 @@ class SimulatedAnnealing:
         else:
             raise ValueError(f"Cooling schedule tidak dikenali: {self.schedule_type}")
 
+    # jalankan SA dari state awal
     def run(self, initial_state: Any) -> SAResult:
-        """
-        Menjalankan pencarian Simulated Annealing dari initial_state.
-        Tujuan: Memaksimalkan nilai objective function (E).
-        """
         if self.seed is not None:
             random.seed(self.seed)
 
@@ -91,7 +89,7 @@ class SimulatedAnnealing:
         acceptance_prob_history: List[float] = [1.0]
         temperature_history: List[float] = [temp]
 
-        # Pelacak kondisi "stuck" di local optima
+        # hitung stuck
         stuck_count = 0
         stuck_events_iterations: List[int] = []
         no_improvement_streak = 0
@@ -100,19 +98,19 @@ class SimulatedAnnealing:
         while iteration < self.max_iterations and temp > self.min_temp:
             iteration += 1
 
-            # Bangkitkan 1 random successor/neighbor (mengizinkan swap, move, atau rotasi 90 derajat)
+            # satu tetangga acak
             candidate_state = self.neighbor_fn(current_state)
             candidate_score = self.objective_fn(candidate_state)
 
-            # Karena maksimasi: delta_E = E(next) - E(current)
+            # maksimasi, jadi delta_e = baru - lama
             delta_e = candidate_score - current_score
 
             if delta_e > 0:
-                # Neighbor lebih baik -> langsung terima (probabilitas = 1.0)
+                # lebih baik, langsung terima
                 acceptance_prob = 1.0
                 accepted = True
             else:
-                # Neighbor lebih buruk atau sama -> terima dengan probabilitas e^(delta_E / T)
+                # lebih buruk, terima dengan peluang e^(dE/T)
                 acceptance_prob = math.exp(delta_e / temp) if temp > 0 else 0.0
                 accepted = random.random() < acceptance_prob
 
@@ -120,26 +118,26 @@ class SimulatedAnnealing:
                 current_state = candidate_state
                 current_score = candidate_score
 
-            # Perbarui best state global dan cek apakah terjebak (stagnan) di local optima
+            # update best dan cek stuck
             if current_score > best_score:
                 best_score = current_score
                 best_state = deepcopy(current_state)
                 no_improvement_streak = 0
             else:
                 no_improvement_streak += 1
-                # Jika selama `stuck_window` iterasi berturut-turut tidak ada perbaikan nilai objektif
+                # stuck kalau nggak membaik selama stuck_window iterasi
                 if no_improvement_streak >= self.stuck_window:
                     stuck_count += 1
                     stuck_events_iterations.append(iteration)
-                    no_improvement_streak = 0  # Reset window untuk menghitung episode stuck berikutnya
+                    no_improvement_streak = 0  # reset
 
-            # Catat metrik iterasi
+            # catat histori
             objective_history.append(current_score)
             best_objective_history.append(best_score)
             acceptance_prob_history.append(acceptance_prob)
             temperature_history.append(temp)
 
-            # Update temperatur sesuai cooling schedule
+            # turunkan suhu
             temp = self._calculate_temperature(iteration, temp)
 
         duration_sec = time.perf_counter() - start_time
@@ -160,3 +158,15 @@ class SimulatedAnnealing:
             acceptance_prob_history=acceptance_prob_history,
             temperature_history=temperature_history,
         )
+
+
+# jalankan SA untuk satu set paket dan truk
+def run_sa(packages, truck, seed=None, **params) -> SAResult:
+    rng = random.Random(seed)
+    sa = SimulatedAnnealing(
+        objective_fn=lambda s: objective(s, packages, truck),
+        neighbor_fn=lambda s: random_neighbor(s, packages, truck, rng),
+        seed=seed,
+        **params,
+    )
+    return sa.run(random_state(packages, truck, rng))

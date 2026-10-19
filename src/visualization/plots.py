@@ -5,25 +5,23 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
+# bikin folder kalau belum ada
 def ensure_dir(filepath: str) -> None:
     directory = os.path.dirname(filepath)
     if directory:
         os.makedirs(directory, exist_ok=True)
 
 
+# plot objektif per iterasi
 def plot_objective_history(
     objective_history: List[float],
     algorithm_name: str,
     save_path: Optional[str] = None,
     best_history: Optional[List[float]] = None,
 ) -> go.Figure:
-    """
-    Membuat plot nilai objective function terhadap iterasi (berlaku untuk HC dan SA).
-    Menyimpan file PNG untuk laporan (jika save_path diberikan) dan mengembalikan Figure Plotly.
-    """
     iterations = list(range(len(objective_history)))
 
-    # 1. Simpan versi statis (Matplotlib) untuk dokumen laporan
+    # png buat laporan
     if save_path:
         ensure_dir(save_path)
         plt.figure(figsize=(10, 5))
@@ -39,7 +37,7 @@ def plot_objective_history(
         plt.savefig(save_path, dpi=300)
         plt.close()
 
-    # 2. Buat versi interaktif (Plotly) untuk demo
+    # versi interaktif buat demo
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -70,19 +68,16 @@ def plot_objective_history(
     return fig
 
 
+# plot e^(dE/T) SA
 def plot_sa_acceptance_prob(
     acceptance_prob_history: List[float],
     temperature_history: Optional[List[float]] = None,
     stuck_iterations: Optional[List[int]] = None,
     save_path: Optional[str] = None,
 ) -> go.Figure:
-    """
-    Membuat plot e^(ΔE/T) terhadap banyak iterasi yang telah dilewati untuk Simulated Annealing.
-    Menampilkan titik-titik iterasi di mana algoritma terdeteksi stuck di local optima.
-    """
     iterations = list(range(len(acceptance_prob_history)))
 
-    # 1. Simpan versi statis (Matplotlib) untuk laporan
+    # png buat laporan
     if save_path:
         ensure_dir(save_path)
         fig_mpl, ax1 = plt.subplots(figsize=(10, 5))
@@ -126,7 +121,7 @@ def plot_sa_acceptance_prob(
         plt.savefig(save_path, dpi=300)
         plt.close()
 
-    # 2. Buat versi interaktif (Plotly) untuk demo
+    # versi interaktif buat demo
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
         go.Scattergl(
@@ -175,6 +170,7 @@ def plot_sa_acceptance_prob(
     return fig
 
 
+# plot max dan rata-rata populasi GA
 def plot_ga_population_history(
     max_fitness_history: List[float],
     avg_fitness_history: List[float],
@@ -182,14 +178,10 @@ def plot_ga_population_history(
     max_generations: int,
     save_path: Optional[str] = None,
 ) -> go.Figure:
-    """
-    Membuat plot nilai objective function maksimum dan rata-rata populasi
-    terhadap banyak iterasi/generasi pada Genetic Algorithm.
-    """
     generations = list(range(len(max_fitness_history)))
     subtitle = f"(Populasi = {pop_size}, Iterasi = {max_generations})"
 
-    # 1. Simpan versi statis (Matplotlib) untuk laporan
+    # png buat laporan
     if save_path:
         ensure_dir(save_path)
         plt.figure(figsize=(10, 5))
@@ -204,7 +196,7 @@ def plot_ga_population_history(
         plt.savefig(save_path, dpi=300)
         plt.close()
 
-    # 2. Buat versi interaktif (Plotly) untuk demo
+    # versi interaktif buat demo
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(

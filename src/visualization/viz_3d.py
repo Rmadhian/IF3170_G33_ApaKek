@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# Palet warna berbeda untuk tiap paket
+# warna tiap paket
 PACKAGE_PALETTE = [
     "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899",
     "#06b6d4", "#84cc16", "#f97316", "#6366f1", "#14b8a6",
@@ -10,11 +10,8 @@ PACKAGE_PALETTE = [
 ]
 
 
+# ubah paket jadi dict
 def _extract_package_dict(pkg: Any) -> Dict[str, Any]:
-    """
-    Adapter fleksibel agar visualisasi bisa membaca state baik berupa objek class
-    maupun dictionary/JSON dari modul core milik Rama.
-    """
     if isinstance(pkg, dict):
         return pkg
     return {
@@ -33,16 +30,16 @@ def _extract_package_dict(pkg: Any) -> Dict[str, Any]:
     }
 
 
+# balok 3d
 def _create_cuboid_mesh(
     x: float, y: float, z: float, w: float, l: float, h: float,
     color: str, name: str, hover_text: str, opacity: float = 0.75
 ) -> go.Mesh3d:
-    """Membuat objek balok 3D padat (8 titik sudut, 12 segitiga permukaan)."""
     vx = [x, x + w, x + w, x, x, x + w, x + w, x]
     vy = [y, y, y + l, y + l, y, y, y + l, y + l]
     vz = [z, z, z, z, z + h, z + h, z + h, z + h]
 
-    # Indeks segitiga untuk 6 sisi balok
+    # segitiga 6 sisi
     i = [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2]
     j = [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3]
     k = [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6]
@@ -60,20 +57,20 @@ def _create_cuboid_mesh(
     )
 
 
+# garis rusuk balok
 def _create_wireframe_edges(
     x: float, y: float, z: float, w: float, l: float, h: float,
     line_color: str = "#1e293b", line_width: int = 3, name: str = "Wireframe", showlegend: bool = False
 ) -> go.Scatter3d:
-    """Membuat garis rusuk 3D untuk mempertegas batas paket atau dinding peti kemas."""
     edges_x, edges_y, edges_z = [], [], []
     corners = [
         (x, y, z), (x + w, y, z), (x + w, y + l, z), (x, y + l, z),
         (x, y, z + h), (x + w, y, z + h), (x + w, y + l, z + h), (x, y + l, z + h)
     ]
     edge_pairs = [
-        (0, 1), (1, 2), (2, 3), (3, 0),  # Alas bawah
-        (4, 5), (5, 6), (6, 7), (7, 4),  # Tutup atas
-        (0, 4), (1, 5), (2, 6), (3, 7),  # Tiang vertikal
+        (0, 1), (1, 2), (2, 3), (3, 0),  # alas
+        (4, 5), (5, 6), (6, 7), (7, 4),  # atap
+        (0, 4), (1, 5), (2, 6), (3, 7),  # tiang
     ]
     for p1, p2 in edge_pairs:
         edges_x.extend([corners[p1][0], corners[p2][0], None])
@@ -90,6 +87,7 @@ def _create_wireframe_edges(
     )
 
 
+# visualisasi 3d isi truk
 def visualize_container_state(
     truck_dims: Tuple[int, int, int],
     max_capacity: float,
@@ -98,10 +96,6 @@ def visualize_container_state(
     title: str = "Visualisasi 3D Konfigurasi Peti Kemas — Mejiro Express",
     save_html_path: Optional[str] = None,
 ) -> go.Figure:
-    """
-    Membuat visualisasi 3D peti kemas truk beserta tabel daftar paket di luar peti kemas.
-    Menampilkan warna per paket, penanda khusus barang fragile, legenda, dan status kapasitas.
-    """
     truck_w, truck_l, truck_h = truck_dims
     parsed_packages = [_extract_package_dict(p) for p in packages]
 
@@ -121,14 +115,14 @@ def visualize_container_state(
         ),
     )
 
-    # 1. Gambar kerangka dinding peti kemas truk
+    # dinding truk
     container_wireframe = _create_wireframe_edges(
         0, 0, 0, truck_w, truck_l, truck_h,
         line_color="#0f172a", line_width=5, name="Batas Peti Kemas", showlegend=True
     )
     fig.add_trace(container_wireframe, row=1, col=1)
 
-    # 2. Gambar setiap paket yang berada di dalam peti kemas
+    # paket di dalam
     fragile_markers_x, fragile_markers_y, fragile_markers_z, fragile_texts = [], [], [], []
 
     for idx, pkg in enumerate(inside_pkgs):
@@ -148,13 +142,13 @@ def visualize_container_state(
             f"ETA: {pkg['eta']} hari"
         )
 
-        # Balok 3D paket
+        # balok
         fig.add_trace(
             _create_cuboid_mesh(x, y, z, w, l, h, color=color, name=legend_name, hover_text=hover_info),
             row=1, col=1,
         )
 
-        # Garis tepi paket (Merah tebal jika Fragile, hitam tipis jika reguler)
+        # tepi merah kalau fragile
         edge_color = "#dc2626" if is_fragile else "#334155"
         edge_width = 5 if is_fragile else 2
         fig.add_trace(
@@ -162,14 +156,14 @@ def visualize_container_state(
             row=1, col=1,
         )
 
-        # Tambahkan titik penanda di atas paket jika Fragile
+        # penanda fragile
         if is_fragile:
             fragile_markers_x.append(x + w / 2.0)
             fragile_markers_y.append(y + l / 2.0)
             fragile_markers_z.append(z + h + 0.15)
             fragile_texts.append(f"⚠️ {pkg['id']} (Fragile)")
 
-    # Trace khusus penanda Fragile di legenda
+    # legenda fragile
     if fragile_markers_x:
         fig.add_trace(
             go.Scatter3d(
@@ -186,7 +180,7 @@ def visualize_container_state(
             row=1, col=1,
         )
 
-    # 3. Buat tabel daftar paket yang berada di luar peti kemas
+    # tabel paket di luar
     if outside_pkgs:
         out_ids = [p["id"] for p in outside_pkgs]
         out_dims = [f"{p['w']}×{p['l']}×{p['h']}" for p in outside_pkgs]
