@@ -4,8 +4,8 @@ import random
 import time
 import copy
 
-from geneticAlgorithm.models import Package, Truck, Gene, Individual
-from geneticAlgorithm.demoPackages import demo_packages
+from core.models import Package, Truck
+from geneticAlgorithm.models import Gene, Individual
 
 class GeneticAlgorithm:
     def __init__(self, packages: List[Package], truck: Truck, population_size=60,

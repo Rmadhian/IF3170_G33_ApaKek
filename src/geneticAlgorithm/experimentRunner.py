@@ -5,8 +5,8 @@ import time
 import matplotlib.pyplot as plt
 
 from geneticAlgorithm.geneticAlgorithm import GeneticAlgorithm
-from geneticAlgorithm.models import Truck
-from config import TRUCK_DIMENSIONS, TRUCK_MAX_CAPACITY, OUTPUT_DIR
+from core.models import Truck
+from geneticAlgorithm.config import TRUCK_DIMENSIONS, TRUCK_MAX_CAPACITY, OUTPUT_DIR
 
 def create_truck():
     w, l, h = TRUCK_DIMENSIONS
@@ -33,8 +33,8 @@ def run_one(packages, truck, population, generations, seed, label, output_dir=OU
 
     x = range(len(result["best_history"]))
     plt.figure()
-    plt.plot(x, result["best_history"], color="#386641", label="Maksimum populasi")
-    plt.plot(x, result["average_history"], color="#386641", linestyle="--",
+    plt.plot(x, result["best_history"], label="Maksimum populasi")
+    plt.plot(x, result["average_history"], linestyle="--",
              label="Rata-rata populasi")
     plt.xlabel("Generasi")
     plt.ylabel("Objective function (value)")

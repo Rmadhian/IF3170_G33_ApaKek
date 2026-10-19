@@ -1,4 +1,4 @@
-from geneticAlgorithm.models import Package
+from core.models import Package
 
 def get_demo_packages():
     return [

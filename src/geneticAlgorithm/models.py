@@ -1,33 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import List, Tuple
-
-
-@dataclass(frozen=True)
-class Package:
-    id: str
-    w: int
-    l: int
-    h: int
-    value: float
-    weight: float
-    fragile: bool = False
-    eta: int = 0
-
-    def orientations(self) -> List[Tuple[int, int, int]]:
-        return list(dict.fromkeys([
-            (self.w, self.l, self.h), (self.w, self.h, self.l),
-            (self.l, self.w, self.h), (self.l, self.h, self.w),
-            (self.h, self.w, self.l), (self.h, self.l, self.w)
-        ]))
-
-
-@dataclass(frozen=True)
-class Truck:
-    w: int
-    l: int
-    h: int
-    max_capacity: float
+from typing import List
 
 
 @dataclass
