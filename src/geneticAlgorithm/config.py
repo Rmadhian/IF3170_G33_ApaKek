@@ -1,0 +1,22 @@
+from pathlib import Path
+
+PROJECT_CODE_DIR = Path(__file__).resolve().parent
+
+PROJECT_ROOT = PROJECT_CODE_DIR.parent.parent
+
+OUTPUT_DIR = PROJECT_ROOT / "output"
+
+# Konfigurasi truk
+TRUCK_DIMENSIONS = (10, 20, 5)
+TRUCK_MAX_CAPACITY = 500
+
+# Konfigurasi eksperimen
+PILOT_POPULATION_SIZE = 40
+PILOT_GENERATIONS = 30
+REPEATS = 3
+
+FIXED_POPULATION_SIZE = 40
+GENERATION_VARIANTS = [20, 50, 100]
+
+FIXED_GENERATIONS = 50
+POPULATION_VARIANTS = [20, 40, 80]

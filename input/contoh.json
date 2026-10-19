@@ -1,0 +1,160 @@
+{
+  "truck": {
+    "w": 6,
+    "l": 8,
+    "h": 4,
+    "max_capacity": 45
+  },
+  "packages": [
+    {
+      "id": "P01",
+      "w": 2,
+      "l": 2,
+      "h": 2,
+      "value": 40,
+      "weight": 3,
+      "fragile": false,
+      "eta": 5
+    },
+    {
+      "id": "P02",
+      "w": 3,
+      "l": 4,
+      "h": 2,
+      "value": 28,
+      "weight": 2,
+      "fragile": false,
+      "eta": 3
+    },
+    {
+      "id": "P03",
+      "w": 4,
+      "l": 1,
+      "h": 3,
+      "value": 48,
+      "weight": 7,
+      "fragile": false,
+      "eta": 3
+    },
+    {
+      "id": "P04",
+      "w": 3,
+      "l": 2,
+      "h": 1,
+      "value": 13,
+      "weight": 6,
+      "fragile": false,
+      "eta": 3
+    },
+    {
+      "id": "P05",
+      "w": 2,
+      "l": 1,
+      "h": 3,
+      "value": 33,
+      "weight": 2,
+      "fragile": false,
+      "eta": 2
+    },
+    {
+      "id": "P06",
+      "w": 3,
+      "l": 3,
+      "h": 1,
+      "value": 32,
+      "weight": 5,
+      "fragile": false,
+      "eta": 4
+    },
+    {
+      "id": "P07",
+      "w": 2,
+      "l": 1,
+      "h": 1,
+      "value": 33,
+      "weight": 2,
+      "fragile": true,
+      "eta": 1
+    },
+    {
+      "id": "P08",
+      "w": 1,
+      "l": 3,
+      "h": 1,
+      "value": 13,
+      "weight": 7,
+      "fragile": false,
+      "eta": 2
+    },
+    {
+      "id": "P09",
+      "w": 2,
+      "l": 4,
+      "h": 2,
+      "value": 48,
+      "weight": 8,
+      "fragile": false,
+      "eta": 5
+    },
+    {
+      "id": "P10",
+      "w": 4,
+      "l": 3,
+      "h": 2,
+      "value": 14,
+      "weight": 1,
+      "fragile": false,
+      "eta": 4
+    },
+    {
+      "id": "P11",
+      "w": 3,
+      "l": 1,
+      "h": 3,
+      "value": 25,
+      "weight": 1,
+      "fragile": false,
+      "eta": 4
+    },
+    {
+      "id": "P12",
+      "w": 3,
+      "l": 2,
+      "h": 2,
+      "value": 56,
+      "weight": 8,
+      "fragile": true,
+      "eta": 1
+    },
+    {
+      "id": "P13",
+      "w": 3,
+      "l": 4,
+      "h": 2,
+      "value": 37,
+      "weight": 7,
+      "fragile": false,
+      "eta": 5
+    },
+    {
+      "id": "P14",
+      "w": 4,
+      "l": 4,
+      "h": 1,
+      "value": 58,
+      "weight": 7,
+      "fragile": false,
+      "eta": 3
+    },
+    {
+      "id": "P15",
+      "w": 2,
+      "l": 1,
+      "h": 1,
+      "value": 55,
+      "weight": 6,
+      "fragile": false,
+      "eta": 3
+    }
+  ]
+}
