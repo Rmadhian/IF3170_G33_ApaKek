@@ -79,5 +79,35 @@ class TestFragile(unittest.TestCase):
         self.assertEqual(fragile_support_count(boxes, [True, False]), 0)
 
 
+class TestEdgeCases(unittest.TestCase):
+    def test_empty(self):
+        self.assertEqual(total_overlap([]), 0)
+        self.assertEqual(floating_count([]), 0)
+        self.assertEqual(fragile_support_count([], []), 0)
+
+    def test_overlap_symmetric(self):
+        a, b = (0, 0, 0, 3, 2, 1), (1, 1, 0, 3, 3, 3)
+        self.assertEqual(overlap_volume(a, b), overlap_volume(b, a))
+
+    def test_supported_by_two(self):
+        boxes = [(0, 0, 0, 1, 2, 2), (1, 0, 0, 1, 2, 2), (0, 0, 2, 2, 2, 1)]
+        self.assertEqual(floating_count(boxes), 0)
+
+    def test_fragile_still_supports_physically(self):
+        boxes = [(0, 0, 0, 2, 2, 2), (0, 0, 2, 2, 2, 2)]
+        self.assertEqual(floating_count(boxes), 0)
+        self.assertEqual(fragile_support_count(boxes, [True, False]), 1)
+
+    def test_tower(self):
+        boxes = [(0, 0, 0, 2, 2, 1), (0, 0, 1, 2, 2, 1), (0, 0, 2, 2, 2, 1)]
+        self.assertEqual(floating_count(boxes), 0)
+        self.assertEqual(fragile_support_count(boxes, [False, True, False]), 1)
+
+    def test_overlapping_and_floating(self):
+        boxes = [(0, 0, 1, 2, 2, 2), (1, 1, 1, 2, 2, 2)]
+        self.assertEqual(total_overlap(boxes), 2)
+        self.assertEqual(floating_count(boxes), 2)
+
+
 if __name__ == "__main__":
     unittest.main()
