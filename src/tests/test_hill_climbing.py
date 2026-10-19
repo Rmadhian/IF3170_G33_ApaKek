@@ -3,7 +3,7 @@ import unittest
 
 from core.models import Package, Placement, State, Truck, random_state
 from core.objective import objective, violations
-from hillClimbing.hillClimbing import sideways_move, steepest_ascent
+from hillClimbing.hillClimbing import sideways_move, steepest_ascent, stochastic
 
 
 class TestRandomState(unittest.TestCase):
@@ -80,6 +80,31 @@ class TestSidewaysMove(unittest.TestCase):
         r = sideways_move(self.pkgs, tiny, max_sideways=3, initial=start, seed=1)
         self.assertEqual(r["sideways_moves"], 3)
         self.assertEqual(r["final_objective"], 30)
+
+
+class TestStochastic(unittest.TestCase):
+    truck = Truck(4, 4, 4, 100)
+    pkgs = [Package("A", 2, 2, 2, 30, 4), Package("B", 2, 2, 2, 20, 4, True),
+            Package("C", 4, 4, 1, 15, 4)]
+
+    def test_runs_max_iter(self):
+        r = stochastic(self.pkgs, self.truck, max_iter=50, seed=1)
+        self.assertEqual(r["iterations"], 50)
+        self.assertEqual(len(r["history"]), 51)
+
+    def test_never_decreases(self):
+        h = stochastic(self.pkgs, self.truck, max_iter=200, seed=2)["history"]
+        self.assertTrue(all(a <= b for a, b in zip(h, h[1:])))
+
+    def test_improves_from_empty(self):
+        start = State([Placement(False), Placement(False), Placement(False)])
+        r = stochastic(self.pkgs, self.truck, max_iter=300, initial=start, seed=4)
+        self.assertGreater(r["final_objective"], 0)
+
+    def test_same_seed_same_result(self):
+        a = stochastic(self.pkgs, self.truck, max_iter=100, seed=9)
+        b = stochastic(self.pkgs, self.truck, max_iter=100, seed=9)
+        self.assertEqual(a["history"], b["history"])
 
 
 if __name__ == "__main__":
