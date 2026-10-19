@@ -1,5 +1,7 @@
 from itertools import combinations
 
+from core.models import Package, State, Truck
+
 # box = (x, y, z, w, l, h)
 
 
@@ -69,3 +71,30 @@ def total_out_of_bounds(boxes, truck_dims):
 # kelebihan berat di atas kapasitas
 def overweight(total_weight, max_capacity):
     return max(0, total_weight - max_capacity)
+
+
+# bobot penalti, lebih besar dari total value
+def penalty_weight(packages):
+    return sum(p.value for p in packages) + 1
+
+
+# rincian pelanggaran tiap constraint
+def violations(state: State, packages: list[Package], truck: Truck):
+    idx = state.inside_indices()
+    boxes = [state.box(i, packages) for i in idx]
+    fragile = [packages[i].fragile for i in idx]
+    weight = sum(packages[i].weight for i in idx)
+    return {
+        "overlap": total_overlap(boxes),
+        "out_of_bounds": total_out_of_bounds(boxes, (truck.w, truck.l, truck.h)),
+        "floating": floating_count(boxes),
+        "fragile": fragile_support_count(boxes, fragile),
+        "overweight": overweight(weight, truck.max_capacity),
+    }
+
+
+# nilai objektif, makin besar makin baik
+def objective(state: State, packages: list[Package], truck: Truck):
+    value = sum(packages[i].value for i in state.inside_indices())
+    total = sum(violations(state, packages, truck).values())
+    return value - penalty_weight(packages) * total

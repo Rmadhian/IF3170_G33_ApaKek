@@ -2,6 +2,8 @@ import unittest
 
 from core.objective import (
     floating_count,
+    objective,
+    violations,
     fragile_support_count,
     out_of_bounds_volume,
     overweight,
@@ -9,7 +11,7 @@ from core.objective import (
     total_out_of_bounds,
     total_overlap,
 )
-from core.models import Package, Placement, State
+from core.models import Package, Placement, State, Truck
 
 
 class TestOverlap(unittest.TestCase):
@@ -162,6 +164,44 @@ class TestBoundsWeight(unittest.TestCase):
 
     def test_over_capacity(self):
         self.assertEqual(overweight(130, 100), 30)
+
+
+class TestObjective(unittest.TestCase):
+    truck = Truck(4, 4, 4, 10)
+    pkgs = [Package("A", 2, 2, 2, 30, 4), Package("B", 2, 2, 2, 20, 4, True)]
+
+    def test_empty_truck(self):
+        state = State([Placement(False), Placement(False)])
+        self.assertEqual(objective(state, self.pkgs, self.truck), 0)
+
+    def test_valid_side_by_side(self):
+        state = State([Placement(True, 0, 0, 0), Placement(True, 2, 0, 0)])
+        self.assertEqual(objective(state, self.pkgs, self.truck), 50)
+
+    def test_outside_ignored(self):
+        state = State([Placement(True, 0, 0, 0), Placement(False)])
+        self.assertEqual(objective(state, self.pkgs, self.truck), 30)
+
+    def test_overlap_penalized(self):
+        state = State([Placement(True, 0, 0, 0), Placement(True, 1, 0, 0)])
+        self.assertEqual(violations(state, self.pkgs, self.truck)["overlap"], 4)
+        self.assertEqual(objective(state, self.pkgs, self.truck), 50 - 51 * 4)
+
+    def test_on_fragile_penalized(self):
+        state = State([Placement(True, 0, 0, 2), Placement(True, 0, 0, 0)])
+        v = violations(state, self.pkgs, self.truck)
+        self.assertEqual((v["fragile"], v["floating"]), (1, 0))
+
+    def test_overweight_penalized(self):
+        heavy = [Package("A", 1, 1, 1, 30, 8), Package("B", 1, 1, 1, 20, 8)]
+        state = State([Placement(True, 0, 0, 0), Placement(True, 1, 0, 0)])
+        self.assertEqual(violations(state, heavy, self.truck)["overweight"], 6)
+
+    def test_valid_beats_invalid(self):
+        valid = State([Placement(True, 0, 0, 0), Placement(False)])
+        invalid = State([Placement(True, 0, 0, 0), Placement(True, 0, 0, 3)])
+        self.assertGreater(objective(valid, self.pkgs, self.truck),
+                           objective(invalid, self.pkgs, self.truck))
 
 
 if __name__ == "__main__":
