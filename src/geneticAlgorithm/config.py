@@ -4,7 +4,7 @@ PROJECT_CODE_DIR = Path(__file__).resolve().parent
 
 PROJECT_ROOT = PROJECT_CODE_DIR.parent.parent
 
-OUTPUT_DIR = PROJECT_ROOT / "output"
+OUTPUT_DIR = PROJECT_ROOT / "output" / "ga_main"
 
 # Konfigurasi truk
 TRUCK_DIMENSIONS = (10, 20, 5)
